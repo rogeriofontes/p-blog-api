@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -13,7 +14,8 @@ import (
 var DB *mongo.Client
 
 func ConnectDatabase() {
-	clientOptions := options.Client().ApplyURI("mongodb://admin:admin@localhost:27017")
+	mongoURI := os.Getenv("MONGO_URI")                   // Pegando do environment
+	clientOptions := options.Client().ApplyURI(mongoURI) //mongodb://admin:admin@localhost:27017
 
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
@@ -36,7 +38,8 @@ func ConnectDatabase() {
 // Retorna uma coleção do banco de dados
 func GetCollection(collectionName string) *mongo.Collection {
 	if DB == nil {
-		log.Fatalf("Erro: A conexão com o banco de dados não foi inicializada!")
+		log.Println("A conexão com o banco de dados não foi inicializada. Tentando conectar...")
+		ConnectDatabase()
 	}
 	return DB.Database("blog").Collection(collectionName)
 }

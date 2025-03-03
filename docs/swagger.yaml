@@ -1,0 +1,1081 @@
+basePath: /api
+definitions:
+  models.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  models.FavoritePost:
+    properties:
+      id:
+        type: string
+      post_id:
+        type: string
+      saved_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  models.Follower:
+    properties:
+      follow_id:
+        type: string
+      followed_at:
+        type: string
+      id:
+        type: string
+      user_id:
+        type: string
+    type: object
+  models.Post:
+    properties:
+      category:
+        $ref: '#/definitions/models.PostCategory'
+      category_id:
+        description: Agora é ObjectID
+        type: string
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      tags:
+        description: Lista de Tags
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+    required:
+    - category_id
+    type: object
+  models.PostCategory:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  models.PostComment:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      post_id:
+        type: string
+      user_id:
+        type: string
+    type: object
+  models.PostReaction:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      post_id:
+        type: string
+      reaction:
+        description: '"like" ou "dislike"'
+        type: boolean
+      user_id:
+        type: string
+    type: object
+  models.PostTag:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  models.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      password:
+        description: Será armazenado como hash
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: seuemail@example.com
+    name: Seu Nome
+    url: http://www.seusite.com
+  description: API para gerenciar posts, comentários, categorias e usuários.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Blog API
+  version: "1.0"
+paths:
+  /categories:
+    get:
+      consumes:
+      - application/json
+      description: Listar todas as categorias
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.PostCategory'
+            type: array
+      summary: Listar todas as categorias
+      tags:
+      - categories
+    post:
+      consumes:
+      - application/json
+      description: Criar uma nova categoria
+      parameters:
+      - description: Category
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/models.PostCategory'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.PostCategory'
+      summary: Criar uma nova categoria
+      tags:
+      - categories
+  /categories/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletar uma categoria por ID
+      parameters:
+      - description: ID da categoria
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Deletar uma categoria por ID
+      tags:
+      - categories
+    get:
+      consumes:
+      - application/json
+      description: Buscar categoria por ID
+      parameters:
+      - description: ID da categoria
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PostCategory'
+      summary: Buscar categoria por ID
+      tags:
+      - categories
+    put:
+      consumes:
+      - application/json
+      description: Atualizar uma categoria por ID
+      parameters:
+      - description: ID da categoria
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Category
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/models.PostCategory'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PostCategory'
+      summary: Atualizar uma categoria por ID
+      tags:
+      - categories
+  /comments:
+    get:
+      consumes:
+      - application/json
+      description: Buscar todos os comentários
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.PostComment'
+            type: array
+      summary: Buscar todos os comentários
+      tags:
+      - Comentários
+    post:
+      consumes:
+      - application/json
+      description: Criar um comentário
+      parameters:
+      - description: Comentário
+        in: body
+        name: comment
+        required: true
+        schema:
+          $ref: '#/definitions/models.PostComment'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.PostComment'
+      summary: Criar um comentário
+      tags:
+      - Comentários
+  /comments/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletar um comentário por ID
+      parameters:
+      - description: ID do comentário
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Comentário deletado com sucesso
+          schema:
+            type: string
+      summary: Deletar um comentário por ID
+      tags:
+      - Comentários
+    get:
+      consumes:
+      - application/json
+      description: Buscar comentário por ID
+      parameters:
+      - description: ID do comentário
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PostComment'
+      summary: Buscar comentário por ID
+      tags:
+      - Comentários
+    put:
+      consumes:
+      - application/json
+      description: Atualizar um comentário por ID
+      parameters:
+      - description: ID do comentário
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Comentário
+        in: body
+        name: comment
+        required: true
+        schema:
+          $ref: '#/definitions/models.PostComment'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Comentário atualizado com sucesso
+          schema:
+            type: string
+      summary: Atualizar um comentário por ID
+      tags:
+      - Comentários
+  /favorites:
+    post:
+      consumes:
+      - application/json
+      description: Adiciona um post aos favoritos de um usuário
+      parameters:
+      - description: Favorito a ser adicionado
+        in: body
+        name: favorite
+        required: true
+        schema:
+          $ref: '#/definitions/models.FavoritePost'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.FavoritePost'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Adicionar um post aos favoritos
+      tags:
+      - Favorites
+  /favorites/{user_id}:
+    get:
+      consumes:
+      - application/json
+      description: Lista os posts favoritados por um usuário
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.FavoritePost'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Listar posts favoritados por um usuário
+      tags:
+      - Favorites
+  /favorites/{user_id}/{post_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove um post dos favoritos de um usuário
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: user_id
+        required: true
+        type: string
+      - description: ID do post
+        in: path
+        name: post_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Remover um post dos favoritos
+      tags:
+      - Favorites
+  /followers:
+    post:
+      consumes:
+      - application/json
+      description: Seguir um usuário
+      parameters:
+      - description: Seguidor a ser adicionado
+        in: body
+        name: follower
+        required: true
+        schema:
+          $ref: '#/definitions/models.Follower'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Follower'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Seguir um usuário
+      tags:
+      - Followers
+  /followers/{user_id}:
+    get:
+      consumes:
+      - application/json
+      description: Listar seguidores de um usuário
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Follower'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Listar seguidores de um usuário
+      tags:
+      - Followers
+  /init/categories:
+    get:
+      consumes:
+      - application/json
+      description: Inicializa a coleção de categorias após conectar ao banco
+      produces:
+      - application/json
+      responses: {}
+      summary: Inicializa a coleção de categorias
+      tags:
+      - categories
+  /init/comments:
+    get:
+      consumes:
+      - application/json
+      description: Inicializa a coleção de comentários após conectar ao banco
+      produces:
+      - application/json
+      responses: {}
+      summary: Inicializa a coleção de comentários
+      tags:
+      - Comentários
+  /init/favorites:
+    get:
+      consumes:
+      - application/json
+      description: Inicializa a coleção de favoritos após conectar ao banco
+      produces:
+      - application/json
+      responses: {}
+      summary: Inicializa a coleção de favoritos
+      tags:
+      - Favorites
+  /init/followers:
+    get:
+      consumes:
+      - application/json
+      description: Inicializa a coleção de seguidores após conectar ao banco
+      produces:
+      - application/json
+      responses: {}
+      summary: Inicializa a coleção de seguidores
+      tags:
+      - Followers
+  /init/posts:
+    get:
+      consumes:
+      - application/json
+      description: Inicializa a coleção de posts após conectar ao banco
+      produces:
+      - application/json
+      responses: {}
+      summary: Inicializa a coleção de posts
+      tags:
+      - posts
+  /posts:
+    get:
+      description: Retorna uma lista de posts do banco de dados
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Post'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Listar posts
+      tags:
+      - posts
+    post:
+      consumes:
+      - application/json
+      description: Cria um novo post e salva no banco de dados
+      parameters:
+      - description: Dados do post
+        in: body
+        name: post
+        required: true
+        schema:
+          $ref: '#/definitions/models.Post'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Post'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Criar um post
+      tags:
+      - posts
+  /posts/{id}:
+    delete:
+      description: Deleta um post específico do banco de dados
+      parameters:
+      - description: ID do post
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Post'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Deletar post por ID
+      tags:
+      - posts
+    get:
+      description: Retorna um post específico do banco de dados
+      parameters:
+      - description: ID do post
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Post'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Buscar post por ID
+      tags:
+      - posts
+    put:
+      consumes:
+      - application/json
+      description: Atualiza um post existente no banco de dados
+      parameters:
+      - description: ID do post
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados do post
+        in: body
+        name: post
+        required: true
+        schema:
+          $ref: '#/definitions/models.Post'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Post'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Atualizar um post
+      tags:
+      - posts
+  /posts/category/{category_id}:
+    get:
+      description: Retorna uma lista de posts de uma categoria específica
+      parameters:
+      - description: ID da categoria
+        in: path
+        name: category_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Post'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Buscar posts por categoria
+      tags:
+      - posts
+  /reactions:
+    get:
+      consumes:
+      - application/json
+      description: Buscar todas as reações
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.PostReaction'
+            type: array
+      summary: Buscar todas as reações
+      tags:
+      - Reactions
+  /reactions/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Buscar reação por ID
+      parameters:
+      - description: ID da reação
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PostReaction'
+      summary: Buscar reação por ID
+      tags:
+      - Reactions
+  /reactions/dislikes/{post_id}:
+    get:
+      consumes:
+      - application/json
+      description: Contar total de dislikes de um post
+      parameters:
+      - description: ID do post
+        in: path
+        name: post_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Total de dislikes
+          schema:
+            type: string
+      summary: Contar total de dislikes de um post
+      tags:
+      - Reactions
+  /reactions/init:
+    get:
+      consumes:
+      - application/json
+      description: Inicializa a coleção de reações após conectar ao banco
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Reações inicializadas
+          schema:
+            type: string
+      summary: Inicializa a coleção de reações
+      tags:
+      - Reactions
+  /reactions/likes/{post_id}:
+    get:
+      consumes:
+      - application/json
+      description: Contar total de likes de um post
+      parameters:
+      - description: ID do post
+        in: path
+        name: post_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Total de likes
+          schema:
+            type: string
+      summary: Contar total de likes de um post
+      tags:
+      - Reactions
+  /tags:
+    get:
+      consumes:
+      - application/json
+      description: Buscar todas as tags
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.PostTag'
+            type: array
+      summary: Buscar todas as tags
+      tags:
+      - Tags
+  /tags/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletar uma tag por ID
+      parameters:
+      - description: ID da tag
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Tag deletada com sucesso
+          schema:
+            type: string
+      summary: Deletar uma tag por ID
+      tags:
+      - Tags
+    get:
+      consumes:
+      - application/json
+      description: Buscar tag por ID
+      parameters:
+      - description: ID da tag
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PostTag'
+      summary: Buscar tag por ID
+      tags:
+      - Tags
+    put:
+      consumes:
+      - application/json
+      description: Atualizar uma tag por ID
+      parameters:
+      - description: ID da tag
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Tag atualizada com sucesso
+          schema:
+            type: string
+      summary: Atualizar uma tag por ID
+      tags:
+      - Tags
+  /tags/init:
+    get:
+      consumes:
+      - application/json
+      description: Inicializa a coleção de tags após conectar ao banco
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Tags inicializadas
+          schema:
+            type: string
+      summary: Inicializa a coleção de tags
+      tags:
+      - Tags
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Listar todos os usuários
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Listar todos os usuários
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Criar um novo usuário
+      parameters:
+      - description: Usuário a ser criado
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Criar um novo usuário
+      tags:
+      - Users
+  /users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletar um usuário por ID
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Usuário deletado com sucesso
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Deletar um usuário por ID
+      tags:
+      - Users
+    get:
+      consumes:
+      - application/json
+      description: Buscar um usuário pelo ID
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+      summary: Buscar um usuário pelo ID
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: Atualizar um usuário por ID
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Usuário a ser atualizado
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Usuário atualizado com sucesso
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Atualizar um usuário por ID
+      tags:
+      - Users
+  /users/init:
+    get:
+      consumes:
+      - application/json
+      description: Inicializa a coleção de usuários após conectar ao banco
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Usuários inicializados
+          schema:
+            type: string
+      summary: Inicializa a coleção de usuários
+      tags:
+      - Users
+swagger: "2.0"

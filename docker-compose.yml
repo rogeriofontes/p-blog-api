@@ -1,6 +1,16 @@
 version: '3.8'
 
 services:
+  api:
+    build: .
+    container_name: go_blog_api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongodb
+    environment:
+      - MONGO_URI=mongodb://admin:admin@mongodb:27017/blog?authSource=admin
+    restart: always
   mongodb:
     image: mongo:latest
     container_name: mongodb
