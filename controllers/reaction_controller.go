@@ -44,11 +44,24 @@ func CreateReaction(c *gin.Context) {
 		return
 	}
 
+	filter := bson.M{"post_id": reaction.PostID, "user_id": reaction.UserID}
+	count, err := reactionCollection.CountDocuments(context.TODO(), filter)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao verificar reação"})
+		return
+	}
+
+	if count > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Reação para esse usuário " + reaction.UserID + " já existe"})
+		return
+	}
+
 	reaction.ID = primitive.NewObjectID()
 	reaction.CreatedAt = time.Now()
 
-	_, err := reactionCollection.InsertOne(context.TODO(), reaction)
-	if err != nil {
+	_, errCl := reactionCollection.InsertOne(context.TODO(), reaction)
+	if errCl != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao criar reação"})
 		return
 	}
@@ -138,4 +151,75 @@ func CountDislikes(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"dislikes": count})
+}
+
+// Remover a reação de um usuário em um post
+// @Summary Remover a reação de um usuário
+// @Description Remove a reação (like/dislike) de um post
+// @Tags Reactions
+// @Accept json
+// @Produce json
+// @Param post_id path string true "ID do post"
+// @Param user_id query string true "ID do usuário"
+// @Success 204 {string} string "Reação removida com sucesso"
+// @Router /reactions/{post_id} [delete]
+func RemoveReaction(c *gin.Context) {
+	postID := c.Param("post_id")
+	userID := c.Query("user_id")
+
+	if postID == "" || userID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Parâmetros inválidos"})
+		return
+	}
+
+	// Removendo a reação do usuário para esse post
+	filter := bson.M{"post_id": postID, "user_id": userID}
+	result, err := reactionCollection.DeleteOne(context.TODO(), filter)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao remover a reação"})
+		return
+	}
+
+	if result.DeletedCount == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Reação não encontrada"})
+		return
+	}
+
+	c.JSON(http.StatusNoContent, nil) // HTTP 204 - No Content
+}
+
+// Buscar a reação do usuário para um post específico
+// @Summary Buscar a reação do usuário
+// @Description Retorna a reação atual do usuário (like/dislike) em um post
+// @Tags Reactions
+// @Accept json
+// @Produce json
+// @Param post_id path string true "ID do post"
+// @Param user_id query string true "ID do usuário"
+// @Success 200 {object} map[string]string "Reação do usuário"
+// @Router /reactions/{post_id}/user [get]
+func GetUserReaction(c *gin.Context) {
+	postID := c.Param("post_id")
+	userID := c.Query("user_id")
+
+	if postID == "" || userID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Parâmetros inválidos"})
+		return
+	}
+
+	var reaction models.PostReaction
+	filter := bson.M{"post_id": postID, "user_id": userID}
+
+	err := reactionCollection.FindOne(context.TODO(), filter).Decode(&reaction)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			c.JSON(http.StatusOK, gin.H{"reaction": nil}) // Sem reação registrada
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao buscar a reação"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"reaction": reaction.Reaction}) // Retorna "likes" ou "dislikes"
 }

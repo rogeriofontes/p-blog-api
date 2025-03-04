@@ -167,3 +167,6 @@ show dbs;
 use blog;
 show collections;
 db.users.find().pretty();
+
+docker build -t p-blog-api .
+docker run -d -p 8080:8080 --name p-blog-api-container p-blog-api

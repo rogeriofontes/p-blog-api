@@ -12,6 +12,14 @@ func SetupRoutes(router *gin.Engine) {
 
 	// Rota de autenticação
 	api.POST("/login", controllers.Login)
+	api.POST("/users", controllers.CreateUser)
+	api.GET("/posts", controllers.GetPosts)
+	api.GET("/posts/:id", controllers.GetPostByID)
+
+	api.GET("/reactions/likes/:post_id", controllers.CountLikes)
+	api.GET("/reactions/dislikes/:post_id", controllers.CountDislikes)
+
+	api.GET("/comments", controllers.GetCommentsByPost)
 
 	// Rotas protegidas com JWT
 	protected := api.Group("/")
@@ -27,8 +35,6 @@ func SetupRoutes(router *gin.Engine) {
 		// Rotas de posts
 		protected.POST("/posts", controllers.CreatePost)
 		protected.PUT("/posts/:id", controllers.UpdatePost)
-		protected.GET("/posts", controllers.GetPosts)
-		protected.GET("/posts/:id", controllers.GetPostByID)
 		protected.GET("/posts/category/:category_id", controllers.GetPostsByCategory)
 		protected.DELETE("/posts/:id", controllers.DeletePost)
 
@@ -39,7 +45,7 @@ func SetupRoutes(router *gin.Engine) {
 
 		// Rotas de comentários
 		protected.POST("/comments", controllers.CreateComment)
-		protected.GET("/comments/post/:post_id", controllers.GetCommentsByPost)
+
 		protected.GET("/comments/:id", controllers.GetCommentByID)
 		protected.PUT("/comments/:id", controllers.UpdateComment)
 		protected.DELETE("/comments/:id", controllers.DeleteComment)
@@ -47,11 +53,10 @@ func SetupRoutes(router *gin.Engine) {
 		// Rotas de reações
 		protected.POST("/reactions", controllers.CreateReaction)
 		protected.GET("/reactions/:id", controllers.GetReactionByID)
-		protected.GET("/reactions/likes/:post_id", controllers.CountLikes)
-		protected.GET("/reactions/dislikes/:post_id", controllers.CountDislikes)
+		protected.DELETE("/reactions/:post_id", controllers.RemoveReaction)
+		protected.GET("/reactions/:post_id/user", controllers.GetUserReaction)
 
 		// Rotas de usuários
-		protected.POST("/users", controllers.CreateUser)
 		protected.GET("/users", controllers.GetAllUsers)
 		protected.GET("/users/:id", controllers.GetUserByID)
 

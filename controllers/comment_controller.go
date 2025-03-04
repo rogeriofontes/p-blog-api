@@ -65,7 +65,7 @@ func CreateComment(c *gin.Context) {
 // @Success 200 {array} models.PostComment
 // @Router /comments [get]
 func GetCommentsByPost(c *gin.Context) {
-	postID := c.Param("post_id")
+	postID := c.Query("post_id")
 	objID, err := primitive.ObjectIDFromHex(postID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ID do post inválido"})

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -159,9 +160,15 @@ func GetPosts(c *gin.Context) {
 // @Router /posts/{id} [get]
 func GetPostByID(c *gin.Context) {
 	id := c.Param("id")
+	fmt.Println("ID recebido:", id) // Log para debug
 
+	objID, err1 := primitive.ObjectIDFromHex(id)
+	if err1 != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
+		return
+	}
 	var post models.Post
-	err := postCollection.FindOne(context.TODO(), bson.M{"_id": id}).Decode(&post)
+	err := postCollection.FindOne(context.TODO(), bson.M{"_id": objID}).Decode(&post)
 
 	if err == mongo.ErrNoDocuments {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Post não encontrado"})
