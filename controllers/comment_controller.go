@@ -125,6 +125,31 @@ func UpdateComment(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Comentário atualizado com sucesso"})
 }
 
+// Buscar todos os comentários
+// @Summary Buscar todos os comentários
+// @Description Buscar todos os comentários
+// @Tags Comentários
+// @Accept  json
+// @Produce  json
+// @Success 200 {array} models.PostComment
+// @Router /comments [get]
+func GetAllComments(c *gin.Context) {
+	cursor, err := commentCollection.Find(context.TODO(), bson.M{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer cursor.Close(context.TODO())
+
+	var comments []models.PostComment
+	if err = cursor.All(context.TODO(), &comments); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, comments)
+}
+
 // Buscar comentário por ID
 // @Summary Buscar comentário por ID
 // @Description Buscar comentário por ID

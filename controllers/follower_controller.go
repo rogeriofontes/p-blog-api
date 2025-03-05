@@ -105,7 +105,7 @@ func GetFollowers(c *gin.Context) {
 		return
 	}
 
-	cursor, err := followerCollection.Find(context.TODO(), bson.M{"follow_id": objUserID})
+	cursor, err := followerCollection.Find(context.TODO(), bson.M{"user_id": objUserID})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao buscar seguidores"})
 		return
@@ -118,4 +118,78 @@ func GetFollowers(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, followers)
+}
+
+// Deixar de seguir um usuário
+// @Summary Deixar de seguir um usuário
+// @Description Deixar de seguir um usuário
+// @Tags Followers
+// @Accept json
+// @Produce json
+// @Param user_id path string true "ID do usuário"
+// @Param followed_id path string true "ID do usuário seguido"
+// @Success 204 {object} models.Follower
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 404 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Router /followers/user/{user_id} [get]
+func GetFollows(c *gin.Context) {
+	userID := c.Param("user_id")
+
+	objUserID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID do usuário inválido"})
+		return
+	}
+
+	cursor, err := followerCollection.Find(context.TODO(), bson.M{"user_id": objUserID})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao buscar seguidores"})
+		return
+	}
+
+	var followers []models.Follower
+	if err = cursor.All(context.TODO(), &followers); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao processar seguidores"})
+		return
+	}
+
+	c.JSON(http.StatusOK, followers)
+}
+
+// Deixar de seguir um usuário
+// @Summary Deixar de seguir um usuário
+// @Description Deixar de seguir um usuário
+// @Tags Followers
+// @Accept json
+// @Produce json
+// @Param user_id path string true "ID do usuário"
+// @Param followed_id path string true "ID do usuário seguido"
+// @Success 204 {object} models.Follower
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Router /followers/user/{user_id}/followed/{followed_id} [delete]
+func UnfollowUser(c *gin.Context) {
+	userID := c.Param("user_id")
+	followedID := c.Param("followed_id")
+
+	objUserID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID do usuário inválido"})
+		return
+	}
+
+	objFollowedID, err := primitive.ObjectIDFromHex(followedID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID do usuário seguido inválido"})
+		return
+	}
+
+	_, err = followerCollection.DeleteOne(context.TODO(), bson.M{"user_id": objUserID, "follow_id": objFollowedID})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao deixar de seguir usuário"})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }

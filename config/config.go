@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -20,6 +21,12 @@ const dbName = "blog"
 var collections = []string{"users", "categories", "posts", "comments", "tags", "reactions", "favorites", "followers"}
 
 func ConnectDatabase() {
+	// Carregar variáveis de ambiente do arquivo .env
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Erro ao carregar o arquivo .env: %v", err)
+	}
+
 	mongoURI := os.Getenv("MONGO_URI")                   // Pegando do environment
 	clientOptions := options.Client().ApplyURI(mongoURI) //mongodb://admin:admin@localhost:27017
 

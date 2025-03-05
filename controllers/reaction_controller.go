@@ -69,6 +69,65 @@ func CreateReaction(c *gin.Context) {
 	c.JSON(http.StatusCreated, reaction)
 }
 
+// Buscar todas as reações
+// @Summary Buscar todas as reações
+// @Description Buscar todas as reações
+// @Tags Reactions
+// @Accept json
+// @Produce json
+// @Success 200 {array} models.PostReaction
+// @Router /reactions [put]
+func UpdateReaction(c *gin.Context) {
+	var reaction models.PostReaction
+	if err := c.ShouldBindJSON(&reaction); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	filter := bson.M{"post_id": reaction.PostID, "user_id": reaction.UserID}
+	update := bson.M{"$set": bson.M{"reaction": reaction.Reaction}}
+
+	_, err := reactionCollection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao atualizar reação"})
+		return
+	}
+
+	c.JSON(http.StatusOK, reaction)
+}
+
+// Buscar todas as reações
+// @Summary Buscar todas as reações
+// @Description Buscar todas as reações
+// @Tags Reactions
+// @Accept json
+// @Produce json
+// @Success 200 {array} models.PostReaction
+// @Router /reactions/post/{post_id} [get]
+func GetReactionsByPost(c *gin.Context) {
+
+	postID := c.Query("post_id")
+	objID, err := primitive.ObjectIDFromHex(postID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID do post inválido"})
+		return
+	}
+
+	cursor, err := reactionCollection.Find(context.TODO(), bson.M{"post_id": objID})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao buscar reações"})
+		return
+	}
+
+	var reactions []models.PostReaction
+	if err = cursor.All(context.TODO(), &reactions); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao processar reações"})
+		return
+	}
+
+	c.JSON(http.StatusOK, reactions)
+}
+
 // Contar total de likes de um post
 // @Summary Contar total de likes de um post
 // @Description Contar total de likes de um post
@@ -95,6 +154,31 @@ func CountLikes(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"likes": count})
+}
+
+// Buscar todas as reações
+// @Summary Buscar todas as reações
+// @Description Buscar todas as reações
+// @Tags Reactions
+// @Accept json
+// @Produce json
+// @Success 200 {array} models.PostReaction
+// @Router /reactions [get]
+func GetReactions(c *gin.Context) {
+	cursor, err := reactionCollection.Find(context.Background(), bson.M{})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao buscar reações"})
+		return
+	}
+
+	var reactions []models.PostReaction
+	if err = cursor.All(context.Background(), &reactions); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao processar reações"})
+		return
+	}
+
+	c.JSON(http.StatusOK, reactions)
 }
 
 // Buscar reação por ID
@@ -164,29 +248,31 @@ func CountDislikes(c *gin.Context) {
 // @Success 204 {string} string "Reação removida com sucesso"
 // @Router /reactions/{post_id} [delete]
 func RemoveReaction(c *gin.Context) {
-	postID := c.Param("post_id")
-	userID := c.Query("user_id")
+	reactionID := c.Param("id")
 
-	if postID == "" || userID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Parâmetros inválidos"})
-		return
-	}
-
-	// Removendo a reação do usuário para esse post
-	filter := bson.M{"post_id": postID, "user_id": userID}
-	result, err := reactionCollection.DeleteOne(context.TODO(), filter)
-
+	// Converter para ObjectID
+	objID, err := primitive.ObjectIDFromHex(reactionID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao remover a reação"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
 		return
 	}
 
-	if result.DeletedCount == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Reação não encontrada"})
+	// Verificar se o post existe
+	var existingReaction bson.M
+	err = reactionCollection.FindOne(context.TODO(), bson.M{"_id": objID}).Decode(&existingReaction)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Post não encontrado"})
 		return
 	}
 
-	c.JSON(http.StatusNoContent, nil) // HTTP 204 - No Content
+	// Deletar o post
+	_, err = reactionCollection.DeleteOne(context.TODO(), bson.M{"_id": objID})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao deletar post"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Post deletado com sucesso"})
 }
 
 // Buscar a reação do usuário para um post específico

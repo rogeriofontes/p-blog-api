@@ -15,7 +15,7 @@ COPY . .
 RUN go build -o main .
 
 # Expor a porta da API
-EXPOSE 8080
+EXPOSE 8484
 
 # Comando para rodar a API
 CMD ["/app/main"]

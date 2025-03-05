@@ -169,3 +169,44 @@ func DeleteTag(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Tag deletada com sucesso"})
 }
+
+// Buscar tags por post
+// @Summary Buscar tags por post
+// @Description Buscar tags por post
+// @Tags Tags
+// @Accept json
+// @Produce json
+// @Param post_id query string true "ID do post"
+// @Success 200 {array} models.PostTag
+// @Router /tags/post [get]
+func GetTagsByPost(c *gin.Context) {
+	postID := c.Query("post_id")
+
+	objID, err := primitive.ObjectIDFromHex(postID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
+		return
+	}
+
+	var post models.Post
+	err = postCollection.FindOne(context.TODO(), bson.M{"_id": objID}).Decode(&post)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Post não encontrado"})
+		return
+	}
+
+	var tags []models.PostTag
+	cursor, err := tagCollection.Find(context.TODO(), bson.M{"_id": bson.M{"$in": post.Tags}})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer cursor.Close(context.TODO())
+
+	if err = cursor.All(context.TODO(), &tags); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, tags)
+}
