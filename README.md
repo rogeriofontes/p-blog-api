@@ -170,3 +170,7 @@ db.users.find().pretty();
 
 docker build -t p-blog-api .
 docker run -d -p 8080:8080 --name p-blog-api-container p-blog-api
+
+docker build -t rogeriofontes/p-blog-api:v2 .
+docker login
+docker push rogeriofontes/p-blog-api:v2

@@ -3,9 +3,9 @@ version: '3.8'
 services:
   api:
     build: .
-    container_name: go_blog_api
+    container_name: p-blog-api
     ports:
-      - "8080:8080"
+      - "8484:8484"
     depends_on:
       - mongodb
     environment:
